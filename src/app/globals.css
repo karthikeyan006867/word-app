@@ -1,0 +1,282 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Editor styles */
+.editor-container {
+  min-height: 100vh;
+}
+
+.editor-page {
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  padding: 1in;
+  width: 8.5in;
+  min-height: 11in;
+}
+
+.dark .editor-page {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .editor-page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+  }
+}
+
+/* Slate editor specific styles */
+[data-slate-editor] {
+  outline: none;
+}
+
+[data-slate-placeholder] {
+  opacity: 0.333;
+}
+
+.table-cell {
+  border: 1px solid #ccc;
+  padding: 8px;
+  min-width: 100px;
+  min-height: 30px;
+}
+
+.code-block {
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  overflow-x: auto;
+}
+
+.dark .code-block {
+  background: #2d3748;
+}
+
+/* Toolbar styles */
+.toolbar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.dark .toolbar {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+.toolbar-button {
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.toolbar-button:hover {
+  background: #f3f4f6;
+}
+
+.dark .toolbar-button:hover {
+  background: #334155;
+}
+
+.toolbar-button.active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.dark .toolbar-button.active {
+  background: #1e40af;
+  color: #dbeafe;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+}
+
+.dark .modal-content {
+  background: #1e293b;
+}
+
+/* Math equation styles */
+.katex-display {
+  margin: 1em 0;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Menu Bar Styles */
+.menu-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+/* Line clamp utility */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Print styles */
+@media print {
+  @page {
+    margin: 0;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .editor-page {
+    width: 100%;
+    height: 100%;
+    page-break-after: always;
+  }
+}
+
+/* Focus styles */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.dark ::selection {
+  background-color: #60a5fa;
+  color: black;
+}
+
+/* Transition for dark mode */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Ruler (optional feature) */
+.ruler {
+  height: 30px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.dark .ruler {
+  background: #374151;
+  border-bottom-color: #4b5563;
+}
