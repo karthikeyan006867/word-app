@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  image         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  documents     Document[]
+  comments      Comment[]
+  collaborations Collaboration[]
+}
+
+model Document {
+  id            String      @id @default(cuid())
+  title         String
+  content       Json        // Slate.js content
+  ownerId       String
+  owner         User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  isPublic      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  versions      Version[]
+  comments      Comment[]
+  collaborators Collaboration[]
+  
+  @@index([ownerId])
+  @@index([updatedAt])
+}
+
+model Version {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  content     Json
+  title       String
+  createdAt   DateTime @default(now())
+  
+  @@index([documentId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String
+  resolved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([documentId])
+  @@index([userId])
+}
+
+model Collaboration {
+  id          String   @id @default(cuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        String   @default("viewer") // viewer, editor, admin
+  createdAt   DateTime @default(now())
+  
+  @@unique([documentId, userId])
+  @@index([documentId])
+  @@index([userId])
+}

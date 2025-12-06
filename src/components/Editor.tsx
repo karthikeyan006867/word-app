@@ -4,16 +4,13 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { createEditor, Descendant, Editor as SlateEditor, Transforms, Element as SlateElement, BaseEditor } from 'slate'
 import { Slate, Editable, withReact, ReactEditor, RenderElementProps, RenderLeafProps } from 'slate-react'
 import { withHistory } from 'slate-history'
-import Toolbar from './Toolbar'
-import MenuBar from './MenuBar'
-import Sidebar from './Sidebar'
+import Ribbon from './Ribbon'
 import FindReplace from './FindReplace'
-import KeyboardShortcuts from './KeyboardShortcuts'
-import TemplateGallery from './TemplateGallery'
 import PageLayout from './PageLayout'
 import CommentsReview from './CommentsReview'
 import VersionHistory from './VersionHistory'
-import CollaborationStatus from './CollaborationStatus'
+import ChartInsert from './ChartInsert'
+import TextEffects from './TextEffects'
 import { useDocumentStore } from '@/store/documentStore'
 import { saveToLocalStorage, loadFromLocalStorage } from '@/utils/export'
 
@@ -52,30 +49,29 @@ type CustomText = {
 
 const Editor: React.FC = () => {
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
-  const { content, setContent, darkMode, zoom } = useDocumentStore()
-  const [showSidebar, setShowSidebar] = useState(true)
+  const { content, setContent, settings } = useDocumentStore()
   const [showFindReplace, setShowFindReplace] = useState(false)
-  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
-  const [showTemplateGallery, setShowTemplateGallery] = useState(false)
   const [showPageLayout, setShowPageLayout] = useState(false)
   const [showCommentsReview, setShowCommentsReview] = useState(false)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
+  const [showChartInsert, setShowChartInsert] = useState(false)
+  const [showTextEffects, setShowTextEffects] = useState(false)
 
   // Load saved document on mount
   useEffect(() => {
     const saved = loadFromLocalStorage()
     if (saved) {
       setContent(saved.content)
-      useDocumentStore.getState().setTitle(saved.title)
+      useDocumentStore.getState().updateSettings({ title: saved.title })
     }
   }, [setContent])
 
   // Auto-save every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      const { content, title, isDirty } = useDocumentStore.getState()
+      const { content, settings, isDirty } = useDocumentStore.getState()
       if (isDirty) {
-        saveToLocalStorage(content, title)
+        saveToLocalStorage(content, settings.title)
         useDocumentStore.getState().setLastSaved(new Date())
       }
     }, 30000)
@@ -151,76 +147,89 @@ const Editor: React.FC = () => {
   }
 
   const handleSave = () => {
-    const { content, title } = useDocumentStore.getState()
-    saveToLocalStorage(content, title)
+    const { content, settings } = useDocumentStore.getState()
+    saveToLocalStorage(content, settings.title)
     useDocumentStore.getState().setLastSaved(new Date())
   }
 
   useEffect(() => {
-    if (darkMode) {
+    if (settings.darkMode) {
       document.documentElement.classList.add('dark')
     } else {
       document.documentElement.classList.remove('dark')
     }
-  }, [darkMode])
+  }, [settings.darkMode])
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
-      <MenuBar 
-        onToggleSidebar={() => setShowSidebar(!showSidebar)}
-        onShowTemplates={() => setShowTemplateGallery(true)}
-        onShowFindReplace={() => setShowFindReplace(true)}
-        onShowComments={() => setShowCommentsReview(true)}
-        onShowVersionHistory={() => setShowVersionHistory(true)}
-        onShowKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
-        onShowPageLayout={() => setShowPageLayout(true)}
-      />
-      
-      <div className="flex">
-        {showSidebar && <Sidebar />}
-        
-        <div className="flex-1">
-          <Slate
-            editor={editor}
-            initialValue={content}
-            onChange={(value) => {
-              const isAstChange = editor.operations.some(
-                op => 'set_selection' !== op.type
-              )
-              if (isAstChange) {
-                setContent(value)
-              }
-            }}
-          >
-            <Toolbar />
-            
-            <div className="editor-container" style={{ zoom: `${zoom}%` }}>
-              <div id="editor-content" className="editor-page">
-                <Editable
-                  renderElement={renderElement}
-                  renderLeaf={renderLeaf}
-                  placeholder="Start typing your document..."
-                  spellCheck
-                  autoFocus
-                  onKeyDown={handleKeyDown}
-                  className="outline-none min-h-full"
-                />
-              </div>
-            </div>
-          </Slate>
+    <div className={`flex flex-col h-screen ${settings.darkMode ? 'dark bg-gray-900' : 'bg-gray-100'}`}>
+      <Slate
+        editor={editor}
+        initialValue={content}
+        onChange={(value) => {
+          const isAstChange = editor.operations.some(
+            op => 'set_selection' !== op.type
+          )
+          if (isAstChange) {
+            setContent(value)
+          }
+        }}
+      >
+        <Ribbon
+          onFindReplace={() => setShowFindReplace(true)}
+          onPageLayout={() => setShowPageLayout(true)}
+          onComments={() => setShowCommentsReview(true)}
+          onVersionHistory={() => setShowVersionHistory(true)}
+          onInsertChart={() => setShowChartInsert(true)}
+          onTextEffects={() => setShowTextEffects(true)}
+        />
+
+        {/* Ruler */}
+        <div className="ruler bg-white dark:bg-gray-800 border-b border-gray-300 dark:border-gray-700 h-6 flex items-center px-4 text-xs text-gray-500">
+          <div className="flex-1 relative">
+            {Array.from({ length: 17 }).map((_, i) => (
+              <span key={i} className="absolute" style={{ left: `${i * 6.25}%` }}>
+                {i}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+
+        {/* Document Area */}
+        <div className="flex-1 overflow-auto bg-gray-200 dark:bg-gray-900 py-8" style={{ zoom: `${settings.zoom}%` }}>
+          <div className="max-w-[8.5in] mx-auto">
+            {/* A4/Letter Page */}
+            <div className="word-page bg-white shadow-lg mb-8 mx-auto"
+                 style={{
+                   width: '8.5in',
+                   minHeight: '11in',
+                   padding: '1in',
+                 }}>
+              <Editable
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                placeholder="Start typing your document..."
+                spellCheck
+                autoFocus
+                onKeyDown={handleKeyDown}
+                className="outline-none min-h-full text-black"
+                style={{
+                  fontFamily: 'Calibri, sans-serif',
+                  fontSize: '11pt',
+                  lineHeight: '1.5'
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </Slate>
 
       {/* Modals */}
-      <FindReplace isOpen={showFindReplace} onClose={() => setShowFindReplace(false)} />
-      <KeyboardShortcuts isOpen={showKeyboardShortcuts} onClose={() => setShowKeyboardShortcuts(false)} />
-      <TemplateGallery isOpen={showTemplateGallery} onClose={() => setShowTemplateGallery(false)} />
-      <PageLayout isOpen={showPageLayout} onClose={() => setShowPageLayout(false)} />
-      <CommentsReview isOpen={showCommentsReview} onClose={() => setShowCommentsReview(false)} />
-      <VersionHistory isOpen={showVersionHistory} onClose={() => setShowVersionHistory(false)} />
-      
-      {/* Collaboration Status */}
-      <CollaborationStatus isConnected={false} activeUsers={[]} />
+      {showFindReplace && <FindReplace isOpen={showFindReplace} onClose={() => setShowFindReplace(false)} />}
+      {showPageLayout && <PageLayout isOpen={showPageLayout} onClose={() => setShowPageLayout(false)} />}
+      {showCommentsReview && <CommentsReview isOpen={showCommentsReview} onClose={() => setShowCommentsReview(false)} />}
+      {showVersionHistory && <VersionHistory isOpen={showVersionHistory} onClose={() => setShowVersionHistory(false)} />}
+      {showChartInsert && <ChartInsert isOpen={showChartInsert} onClose={() => setShowChartInsert(false)} onInsert={() => {}} />}
+      {showTextEffects && <TextEffects isOpen={showTextEffects} onClose={() => setShowTextEffects(false)} />}
     </div>
   )
 }

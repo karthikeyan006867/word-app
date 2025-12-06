@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Word-like Ribbon Styles */
+.ribbon-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ribbon-tabs {
+  min-height: 36px;
+}
+
+.ribbon-content {
+  min-height: 90px;
+  max-height: 120px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Quick Access Toolbar */
+.quick-access-toolbar {
+  z-index: 110;
+}
+
+/* Word Page Styles */
+.word-page {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Ruler Styles */
+.ruler {
+  position: sticky;
+  top: 126px;
+  z-index: 90;
+  user-select: none;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

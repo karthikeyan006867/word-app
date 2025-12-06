@@ -11,7 +11,7 @@ interface VersionHistoryProps {
 }
 
 const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose }) => {
-  const { setContent, setTitle } = useDocumentStore()
+  const { setContent, updateSettings } = useDocumentStore()
   const [versions] = useState(getVersionHistory())
 
   if (!isOpen) return null
@@ -19,7 +19,7 @@ const VersionHistory: React.FC<VersionHistoryProps> = ({ isOpen, onClose }) => {
   const handleRestore = (version: any) => {
     if (confirm(`Restore version from ${new Date(version.timestamp).toLocaleString()}?`)) {
       setContent(version.content)
-      setTitle(version.title)
+      updateSettings({ title: version.title })
       onClose()
     }
   }
